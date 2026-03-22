@@ -557,3 +557,35 @@ renderVente();
 renderChart();
 renderTeamGrid();
 switchView('dashboard');
+
+/* ── ADD PRODUCT ── */
+function openProductModal() {
+  document.getElementById('p-name').value = '';
+  document.getElementById('p-emoji').value = '';
+  document.getElementById('p-prix').value = '';
+  document.getElementById('product-modal').classList.add('open');
+}
+
+function closeProductModal() {
+  document.getElementById('product-modal').classList.remove('open');
+}
+
+function backdropCloseProduct(e) {
+  if (e.target === document.getElementById('product-modal')) closeProductModal();
+}
+
+function saveProduct() {
+  const name = document.getElementById('p-name').value.trim();
+  const emoji = document.getElementById('p-emoji').value.trim() || '🍽️';
+  const prix = parseInt(document.getElementById('p-prix').value) || 1000;
+  if (!name) {
+    toast('Nom requis');
+    return;
+  }
+  const newId = venteRapide.length + 1;
+  venteRapide.push({ emoji, name, prix, id: newId });
+  renderVente();
+  if (currentView === 'sales') renderVenteFull();
+  closeProductModal();
+  toast('Produit ajouté : ' + name);
+}

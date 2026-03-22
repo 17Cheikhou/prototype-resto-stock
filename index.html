@@ -75,7 +75,7 @@
         🔔
         <span style="position:absolute;top:-3px;right:-3px;width:16px;height:16px;background:var(--red);border-radius:50%;font-size:9px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;border:2px solid var(--bg2)">3</span>
       </div>
-      <button class="btn btn-primary" onclick="openAddModal()">+ Ajouter stock</button>
+      <button class="btn btn-primary" onclick="openProductModal()">+ Ajouter produit</button>
     </div>
   </header>
 
@@ -479,6 +479,38 @@
       <div class="modal-actions">
         <button class="btn-cancel-modal" onclick="closeTeamModal()">Annuler</button>
         <button class="btn-save-modal" onclick="saveTeamMember()">✓ Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADD PRODUCT -->
+<div class="modal-backdrop" id="product-modal" onclick="backdropCloseProduct(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-emoji">🍽️</span>
+      <div>
+        <div class="modal-product-name">Ajouter produit</div>
+        <div class="modal-product-cat">Menu FastFood</div>
+      </div>
+      <div class="modal-close" onclick="closeProductModal()">✕</div>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nom du produit</label>
+        <input type="text" id="p-name" placeholder="ex: Burger Deluxe" class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Emoji</label>
+        <input type="text" id="p-emoji" placeholder="ex: 🍔" class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Prix (FCFA)</label>
+        <input type="number" id="p-prix" placeholder="ex: 2500" class="form-input">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel-modal" onclick="closeProductModal()">Annuler</button>
+        <button class="btn-save-modal" onclick="saveProduct()">✓ Ajouter</button>
       </div>
     </div>
   </div>
