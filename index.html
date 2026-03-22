@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>RestoStock — Gestion Restaurant Sénégal</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- SIDEBAR OVERLAY -->
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">🍽️</div>
+      <div class="logo-name">Resto<span>Stock</span></div>
+    </div>
+    <div class="logo-tagline">Gestion · Inventaire · Ventes</div>
+  </div>
+
+  <div class="resto-switcher" onclick="switchResto()">
+    <div class="rs-label">Restaurant actif</div>
+    <div class="rs-name">
+      <span class="rs-dot" id="rs-dot"></span>
+      <span id="rs-name">Le Baobab Gourmand</span>
+      <span class="rs-arrow">⌄</span>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-group-title">Principal</div>
+    <div class="nav-item active" data-view="dashboard" onclick="setActive(this); switchView('dashboard')"><span class="nav-icon">📊</span> Tableau de bord</div>
+    <div class="nav-item" data-view="inventory" onclick="setActive(this); switchView('inventory')"><span class="nav-icon">📦</span> Inventaire <span class="nav-badge">3</span></div>
+    <div class="nav-item" data-view="sales" onclick="setActive(this); switchView('sales')"><span class="nav-icon">🧾</span> Ventes rapides</div>
+    <div class="nav-item" data-view="orders" onclick="setActive(this); switchView('orders')"><span class="nav-icon">🛒</span> Commandes</div>
+    <div class="nav-item" data-view="reports" onclick="setActive(this); switchView('reports')"><span class="nav-icon">📋</span> Recettes & Coûts</div>
+    <div class="nav-group-title">Rapports</div>
+    <div class="nav-item" data-view="reports" onclick="setActive(this); switchView('reports')"><span class="nav-icon">📈</span> Consommation</div>
+    <div class="nav-item" onclick="toast('Fournisseurs — bientôt disponible')"><span class="nav-icon">🚚</span> Fournisseurs</div>
+    <div class="nav-group-title">Système</div>
+    <div class="nav-item" data-view="team" onclick="setActive(this); switchView('team')"><span class="nav-icon">👥</span> Équipe</div>
+    <div class="nav-item" data-view="settings" onclick="setActive(this); switchView('settings')"><span class="nav-icon">⚙️</span> Paramètres</div>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="user-row">
+      <div class="user-avatar">AM</div>
+      <div>
+        <div class="user-name">Aminata M.</div>
+        <div class="user-role">Propriétaire</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="btn-icon menu-btn" onclick="openSidebar()">☰</div>
+      <div class="topbar-title">Tableau de <em>bord</em></div>
+    </div>
+    <div class="topbar-right">
+      <div class="search-box">
+        <span style="font-size:14px;color:var(--text3)">🔍</span>
+        <input type="text" placeholder="Rechercher un produit..." oninput="filterSearch(this.value)">
+      </div>
+      <div class="btn-icon" onclick="toast('📷 Scanner activé — pointez vers le produit')">📷</div>
+      <div class="btn-icon" style="position:relative" onclick="toast('🔔 3 alertes stock bas')">
+        🔔
+        <span style="position:absolute;top:-3px;right:-3px;width:16px;height:16px;background:var(--red);border-radius:50%;font-size:9px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;border:2px solid var(--bg2)">3</span>
+      </div>
+      <button class="btn btn-primary" onclick="openAddModal()">+ Ajouter stock</button>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content-wrapper">
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="content-section active">
+      <!-- KPI -->
+      <div class="kpi-grid">
+        <div class="kpi-card kpi-gold">
+          <div class="kpi-label">Valeur stock total</div>
+          <div class="kpi-val" id="kpi-val">1 248 500</div>
+          <div class="kpi-sub">FCFA · ↑ +4,2% cette semaine</div>
+          <div class="kpi-emoji">💰</div>
+        </div>
+        <div class="kpi-card kpi-red">
+          <div class="kpi-label">Alertes critiques</div>
+          <div class="kpi-val">3</div>
+          <div class="kpi-sub">Produits en rupture imminente</div>
+          <div class="kpi-emoji">⚠️</div>
+        </div>
+        <div class="kpi-card kpi-green">
+          <div class="kpi-label">Produits en stock</div>
+          <div class="kpi-val" id="kpi-count">12</div>
+          <div class="kpi-sub">Sur 2 restaurants</div>
+          <div class="kpi-emoji">📦</div>
+        </div>
+        <div class="kpi-card kpi-orange">
+          <div class="kpi-label">Ventes aujourd'hui</div>
+          <div class="kpi-val" id="kpi-sales">87 500</div>
+          <div class="kpi-sub">FCFA · 34 plats vendus</div>
+          <div class="kpi-emoji">🍽️</div>
+        </div>
+      </div>
+
+      <!-- INVENTAIRE + ALERTES -->
+      <div class="two-col" style="margin-bottom:20px;">
+        <!-- INVENTAIRE -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📦 Inventaire — Stock actuel</div>
+            <span class="card-action" onclick="switchView('inventory')">Tout voir →</span>
+          </div>
+          <div class="cat-pills" id="cat-pills">
+            <div class="cat-pill active" onclick="filterCat(this,'all')"><span class="cat-pill-icon">⬛</span>Tous</div>
+            <div class="cat-pill" onclick="filterCat(this,'viande')"><span class="cat-pill-icon">🥩</span>Viandes</div>
+            <div class="cat-pill" onclick="filterCat(this,'poisson')"><span class="cat-pill-icon">🐟</span>Poissons</div>
+            <div class="cat-pill" onclick="filterCat(this,'riz')"><span class="cat-pill-icon">🍚</span>Riz & Céréales</div>
+            <div class="cat-pill" onclick="filterCat(this,'legume')"><span class="cat-pill-icon">🥬</span>Légumes</div>
+            <div class="cat-pill" onclick="filterCat(this,'epice')"><span class="cat-pill-icon">🌶️</span>Épices</div>
+            <div class="cat-pill" onclick="filterCat(this,'boisson')"><span class="cat-pill-icon">🥤</span>Boissons</div>
+            <div class="cat-pill" onclick="filterCat(this,'huile')"><span class="cat-pill-icon">🫙</span>Huiles</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Produit</th>
+                  <th>Prix unitaire</th>
+                  <th>Stock</th>
+                  <th>Niveau</th>
+                  <th>Statut</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="product-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- RIGHT COL -->
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <!-- ALERTES -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🔴 Alertes stock</div>
+              <span class="card-action">Gérer</span>
+            </div>
+            <div class="alert-list">
+              <div class="alert-item">
+                <div class="alert-dot ad-red"></div>
+                <div>
+                  <div class="alert-text">Poisson Thiof — rupture imminente</div>
+                  <div class="alert-sub">Le Baobab Gourmand · 2 kg restants</div>
+                </div>
+              </div>
+              <div class="alert-item">
+                <div class="alert-dot ad-red"></div>
+                <div>
+                  <div class="alert-text">Huile de palme — stock à 0</div>
+                  <div class="alert-sub">La Terrasse du Plateau · Commander</div>
+                </div>
+              </div>
+              <div class="alert-item">
+                <div class="alert-dot ad-orange"></div>
+                <div>
+                  <div class="alert-text">Riz brisé parfumé — stock bas</div>
+                  <div class="alert-sub">Les 2 restaurants · 12 kg restants</div>
+                </div>
+              </div>
+              <div class="alert-item">
+                <div class="alert-dot ad-gold"></div>
+                <div>
+                  <div class="alert-text">Commande Marché Tilène — demain 7h</div>
+                  <div class="alert-sub">18 articles · Livraison confirmée</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- COMMANDES -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🛒 Commandes récentes</div>
+              <span class="card-action" onclick="switchView('orders')">+ Nouveau</span>
+            </div>
+            <div>
+              <div class="cmd-item">
+                <div class="cmd-ico ci-pending">🕐</div>
+                <div>
+                  <div class="cmd-name">Marché Sandaga</div>
+                  <div class="cmd-date">En attente · Livr. demain</div>
+                </div>
+                <div class="cmd-amount ca-pending">84 000 F</div>
+              </div>
+              <div class="cmd-item">
+                <div class="cmd-ico ci-done">✅</div>
+                <div>
+                  <div class="cmd-name">Fournisseur Viandes Dakar</div>
+                  <div class="cmd-date">Livré · 19 mars</div>
+                </div>
+                <div class="cmd-amount ca-done">142 500 F</div>
+              </div>
+              <div class="cmd-item">
+                <div class="cmd-ico ci-pending">🕐</div>
+                <div>
+                  <div class="cmd-name">Épicerie Tilène</div>
+                  <div class="cmd-date">En attente · 22 mars</div>
+                </div>
+                <div class="cmd-amount ca-pending">37 000 F</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VENTE RAPIDE + CHART -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" id="bottom-row">
+        <!-- VENTE RAPIDE -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">⚡ Vente rapide — 1 tap</div>
+            <span class="card-action" onclick="switchView('sales')">Voir caisse →</span>
+          </div>
+          <div class="vente-grid" id="vente-grid"></div>
+        </div>
+
+        <!-- CHART -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📈 Consommation — 7 jours</div>
+            <span class="card-action" onclick="switchView('reports')">Détail mensuel →</span>
+          </div>
+          <div class="chart-wrap">
+            <div class="chart-title">Valeur stock consommé (en milliers FCFA)</div>
+            <div class="chart-bars" id="chart-bars"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVENTORY VIEW -->
+    <div id="inventory" class="content-section">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📦 Gestion Inventaire</div>
+          <span class="card-action" onclick="openAddModal()">+ Ajouter produit</span>
+        </div>
+        <div class="cat-pills" id="cat-pills-full">
+          <div class="cat-pill active" onclick="filterCat(this,'all')"><span class="cat-pill-icon">⬛</span>Tous</div>
+          <div class="cat-pill" onclick="filterCat(this,'viande')"><span class="cat-pill-icon">🥩</span>Viandes</div>
+          <div class="cat-pill" onclick="filterCat(this,'poisson')"><span class="cat-pill-icon">🐟</span>Poissons</div>
+          <div class="cat-pill" onclick="filterCat(this,'riz')"><span class="cat-pill-icon">🍚</span>Riz & Céréales</div>
+          <div class="cat-pill" onclick="filterCat(this,'legume')"><span class="cat-pill-icon">🥬</span>Légumes</div>
+          <div class="cat-pill" onclick="filterCat(this,'epice')"><span class="cat-pill-icon">🌶️</span>Épices</div>
+          <div class="cat-pill" onclick="filterCat(this,'boisson')"><span class="cat-pill-icon">🥤</span>Boissons</div>
+          <div class="cat-pill" onclick="filterCat(this,'huile')"><span class="cat-pill-icon">🫙</span>Huiles</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Produit</th>
+                <th>Prix unitaire</th>
+                <th>Stock</th>
+                <th>Niveau</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SALES VIEW -->
+    <div id="sales" class="content-section">
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">⚡ Vente rapide</div>
+            <span class="card-action" onclick="clearCart()">Vider panier</span>
+          </div>
+          <div class="vente-grid" id="vente-grid-full"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🛒 Panier actuel</div>
+            <span class="card-action" onclick="checkout()">Valider vente</span>
+          </div>
+          <div id="cart-items"></div>
+          <div class="cart-total" id="cart-total">Total: 0 FCFA</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:20px;">
+        <div class="card-header">
+          <div class="card-title">📜 Historique des ventes</div>
+          <span class="card-action">Exporter</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Articles</th>
+                <th>Total</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="sales-history"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS VIEW -->
+    <div id="orders" class="content-section">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🛒 Gestion Commandes</div>
+          <span class="card-action" onclick="openOrderModal()">+ Nouvelle commande</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Fournisseur</th>
+                <th>Statut</th>
+                <th>Date</th>
+                <th>Montant</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS VIEW -->
+    <div id="reports" class="content-section">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📈 Rapports & Analyses</div>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-title">Consommation hebdomadaire</div>
+          <div class="chart-bars" id="chart-bars-full"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAM VIEW -->
+    <div id="team" class="content-section">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">👥 Gestion Équipe</div>
+          <span class="card-action" onclick="openTeamModal()">+ Ajouter membre</span>
+        </div>
+        <div class="team-grid" id="team-grid"></div>
+      </div>
+      <div class="card" style="margin-top:20px;">
+        <div class="card-header">
+          <div class="card-title">📋 Registre des horaires</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Membre</th>
+                <th>Rôle</th>
+                <th>Heures présentes</th>
+                <th>Présent</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="team-schedule-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div id="settings" class="content-section">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">⚙️ Paramètres</div>
+        </div>
+        <p>Fonctionnalité à venir...</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL MODIFICATION STOCK -->
+<div class="modal-backdrop" id="modal" onclick="backdropClose(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-emoji" id="m-emoji">🐟</span>
+      <div>
+        <div class="modal-product-name" id="m-name">Poisson Thiof</div>
+        <div class="modal-product-cat" id="m-cat">Poissons · Frais · 3 500 F/kg</div>
+      </div>
+      <div class="modal-close" onclick="closeModal()">✕</div>
+    </div>
+    <div class="modal-body">
+      <div class="stock-display">
+        <div class="sd-label">Stock actuel</div>
+        <div>
+          <span class="sd-val" id="m-stock">4.5</span>
+          <span class="sd-unit" id="m-unit"> kg</span>
+        </div>
+        <div class="sd-price" id="m-price">Valeur : 15 750 FCFA</div>
+      </div>
+
+      <div class="operation-tabs">
+        <div class="op-tab active-add" id="tab-add" onclick="setOp('add')">+ Entrée stock</div>
+        <div class="op-tab" id="tab-remove" onclick="setOp('remove')">− Sortie stock</div>
+      </div>
+
+      <div class="qty-row">
+        <div class="qty-minus" onclick="adjustQ(-1)">−</div>
+        <div class="qty-center">
+          <input class="qty-field" id="qty-field" type="number" value="1" min="0.1" step="0.5">
+          <div class="qty-unit-lbl" id="qty-unit-lbl">kg à ajouter</div>
+        </div>
+        <div class="qty-plus" onclick="adjustQ(1)">+</div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel-modal" onclick="closeModal()">Annuler</button>
+        <button class="btn-save-modal" onclick="saveStock()">✓ Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TEAM MEMBER -->
+<div class="modal-backdrop" id="team-modal" onclick="backdropCloseTeam(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-emoji">👤</span>
+      <div>
+        <div class="modal-product-name" id="tm-title">Ajouter membre</div>
+        <div class="modal-product-cat">Équipe RestoStock</div>
+      </div>
+      <div class="modal-close" onclick="closeTeamModal()">✕</div>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nom complet</label>
+        <input type="text" id="tm-name" placeholder="ex: Aminata Diallo" class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Rôle</label>
+        <select id="tm-role" class="form-input">
+          <option value="gérant">Gérant</option>
+          <option value="cuisinier">Cuisinier</option>
+          <option value="serveur">Serveur</option>
+          <option value="caissier">Caissier</option>
+          <option value="aide">Aide cuisine</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Téléphone</label>
+        <input type="tel" id="tm-phone" placeholder="ex: +221 77 xxx xxxx" class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Salaire journalier (FCFA)</label>
+        <input type="number" id="tm-salary" placeholder="ex: 15000" class="form-input">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel-modal" onclick="closeTeamModal()">Annuler</button>
+        <button class="btn-save-modal" onclick="saveTeamMember()">✓ Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span class="toast-icon" id="toast-icon">✓</span><span id="toast-msg"></span></div>
+
+<script src="js/script.js"></script>
+</body>
+</html>
